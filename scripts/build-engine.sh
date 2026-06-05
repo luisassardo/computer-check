@@ -25,6 +25,18 @@ python3 -m PyInstaller \
   --paths . \
   scripts/engine_entry.py
 
+# macOS: the bundled engine is its own executable inside the .app, so Apple
+# notarization requires IT to be Developer-ID signed with hardened runtime + a
+# secure timestamp (PyInstaller only ad-hoc signs it). Sign here, before Tauri
+# bundles it. Set MAC_SIGN_IDENTITY in the release script; skipped otherwise (CI/Windows).
+if [ -n "${MAC_SIGN_IDENTITY:-}" ]; then
+  echo "==> Signing engine binary (Developer ID + hardened runtime + timestamp)…"
+  codesign --force --options runtime --timestamp \
+    --entitlements scripts/engine.entitlements \
+    --sign "$MAC_SIGN_IDENTITY" "${OUT_DIR}/${NAME}"
+  codesign --verify --strict --verbose=2 "${OUT_DIR}/${NAME}" 2>&1 | tail -2 || true
+fi
+
 echo "==> Smoke test (expect JSON on stdout)…"
 "${OUT_DIR}/${NAME}" --device-pseudonym smoketest | head -c 120; echo " …"
 echo "✅ Engine binary at ${OUT_DIR}/${NAME}"

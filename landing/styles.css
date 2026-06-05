@@ -8,7 +8,17 @@
   --accent-soft: oklch(0.83 0.13 178 / 0.14);
 }
 
-main { align-items: center; }
+/* node.css lays main out as a 2-column hero (text + a right-side visual).
+   ComputerCheck has no right-side graphic, so use a single centered column and
+   center the hero so it doesn't look lopsided. */
+main { grid-template-columns: 1fr; max-width: 940px; margin-inline: auto; align-items: start; }
+.identity { text-align: center; }
+.identity .eyebrow { justify-content: center; }
+.identity .desc { margin-inline: auto; }
+.identity .cta-row { justify-content: center; }
+.identity .verify { justify-content: center; }
+/* keep card / list copy left-aligned for readability */
+.features, .feature, .honesty, .hcol, ul.list li { text-align: left; }
 
 /* six feature cards as a 3-column grid */
 .features { grid-template-columns: repeat(3, 1fr); }

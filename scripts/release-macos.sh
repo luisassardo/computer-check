@@ -2,16 +2,28 @@
 # Build the engine, then build, sign, and notarize the universal macOS app.
 # Mirrors the ApiPass release flow (same Developer ID + notarytool pattern).
 #
-# Usage (secrets stay in your env, never committed):
-#   APPLE_ID="luisassardo@me.com" \
-#   APPLE_PASSWORD="xxxx-xxxx-xxxx-xxxx" \
-#   APPLE_TEAM_ID="LWSXUT3Y4S" \
-#   bash scripts/release-macos.sh
+# Auth: EITHER a Keychain profile (recommended — the password never touches your
+# shell or env after the one-time store), OR inline Apple ID + app password.
+#
+# Recommended (one-time, you type the password into Apple's tool):
+#   xcrun notarytool store-credentials "computercheck-notary" \
+#     --apple-id "luisassardo@me.com" --team-id "LWSXUT3Y4S"
+#   APPLE_KEYCHAIN_PROFILE="computercheck-notary" APPLE_TEAM_ID="LWSXUT3Y4S" \
+#     bash scripts/release-macos.sh
+#
+# Inline alternative:
+#   APPLE_ID="…" APPLE_PASSWORD="xxxx-xxxx-xxxx-xxxx" APPLE_TEAM_ID="LWSXUT3Y4S" \
+#     bash scripts/release-macos.sh
 set -euo pipefail
 
-: "${APPLE_ID:?set APPLE_ID (your Apple Developer email)}"
-: "${APPLE_PASSWORD:?set APPLE_PASSWORD (app-specific password, not your real one)}"
 : "${APPLE_TEAM_ID:?set APPLE_TEAM_ID (e.g. LWSXUT3Y4S)}"
+if [ -n "${APPLE_KEYCHAIN_PROFILE:-}" ]; then
+  NOTARY_AUTH=(--keychain-profile "$APPLE_KEYCHAIN_PROFILE")
+else
+  : "${APPLE_ID:?set APPLE_ID or APPLE_KEYCHAIN_PROFILE}"
+  : "${APPLE_PASSWORD:?set APPLE_PASSWORD or APPLE_KEYCHAIN_PROFILE}"
+  NOTARY_AUTH=(--apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID")
+fi
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -24,20 +36,23 @@ DMG="src-tauri/target/universal-apple-darwin/release/bundle/dmg/ComputerCheck_${
 echo "==> ComputerCheck v${VERSION} — universal release"
 rustup target add x86_64-apple-darwin aarch64-apple-darwin >/dev/null 2>&1 || true
 
-# 1. Build the self-contained engine binary (no system Python in the shipped app).
+# 1. Build the self-contained engine binary, signed for notarization (the engine
+#    is its own executable inside the .app, so it must be Developer-ID signed with
+#    hardened runtime + timestamp). build-engine.sh signs it when MAC_SIGN_IDENTITY is set.
+export MAC_SIGN_IDENTITY="Developer ID Application: Luis Assardo (${APPLE_TEAM_ID})"
 bash scripts/build-engine.sh
 
-# 2. Build + sign + notarize the app. The release config patch adds the engine
-#    as a bundled resource; APPLE_* env makes tauri notarize the .app.
-echo "==> Building + signing + notarizing the universal app…"
+# 2. Build + sign the app (release config adds the bundled engine). With the
+#    keychain-profile flow we sign here and notarize the .dmg below; with the
+#    inline APPLE_PASSWORD flow tauri also notarizes the .app during build.
+echo "==> Building + signing the universal app…"
 npx tauri build --target universal-apple-darwin --config src-tauri/tauri.release.conf.json
 
 # 3. Notarize + staple the .dmg (retry loop: notarytool uploads can be flaky).
 echo "==> Notarizing + stapling the .dmg…"
 ok=0
 for a in 1 2 3 4 5; do
-  xcrun notarytool submit "$DMG" \
-    --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID" \
+  xcrun notarytool submit "$DMG" "${NOTARY_AUTH[@]}" \
     --wait > /tmp/cc-notary.log 2>&1 || true
   if grep -q "status: Accepted" /tmp/cc-notary.log; then ok=1; break; fi
   echo "   notary retry ${a}…"; sleep 4

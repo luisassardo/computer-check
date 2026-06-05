@@ -18,6 +18,7 @@ cd "$ROOT"
 [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
 VERSION="$(node -p "require('./package.json').version")"
+TAG="v${VERSION}"
 DMG="src-tauri/target/universal-apple-darwin/release/bundle/dmg/ComputerCheck_${VERSION}_universal.dmg"
 
 echo "==> ComputerCheck v${VERSION} — universal release"
@@ -46,6 +47,20 @@ xcrun stapler staple "$DMG"
 xcrun stapler validate "$DMG"
 spctl -a -t open --context context:primary-signature -vv "$DMG"
 
-echo "==> Checksums…"
-( cd "$(dirname "$DMG")" && shasum -a 256 "$(basename "$DMG")" > SHA256SUMS.txt && cat SHA256SUMS.txt )
-echo "✅ Built, signed, notarized: $DMG"
+echo "==> Staging assets with a stable name…"
+REL="$(mktemp -d)"
+cp "$DMG" "$REL/ComputerCheck_${VERSION}_universal.dmg"
+cp "$DMG" "$REL/ComputerCheck-macOS.dmg"   # stable name the landing button links to
+( cd "$REL" && shasum -a 256 ComputerCheck_${VERSION}_universal.dmg ComputerCheck-macOS.dmg > SHA256SUMS-macos.txt && cat SHA256SUMS-macos.txt )
+
+echo "==> Publishing GitHub release ${TAG}…"
+REPO="luisassardo/computer-check"
+if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+  gh release upload "$TAG" --repo "$REPO" --clobber \
+    "$REL/ComputerCheck_${VERSION}_universal.dmg" "$REL/ComputerCheck-macOS.dmg" "$REL/SHA256SUMS-macos.txt"
+else
+  gh release create "$TAG" --repo "$REPO" --title "ComputerCheck ${VERSION}" \
+    --notes "macOS (Apple-notarized) + Windows installers. Verify against SHA256SUMS before opening." \
+    "$REL/ComputerCheck_${VERSION}_universal.dmg" "$REL/ComputerCheck-macOS.dmg" "$REL/SHA256SUMS-macos.txt"
+fi
+echo "✅ Released macOS ${TAG}: $REL/ComputerCheck-macOS.dmg"

@@ -36,9 +36,11 @@ Full spec: `../securityscan-usb/SELFCHECK-SPEC.md`.
 - [ ] Decide DB home (this HTML / SQLite / D1 / Airtable) — open question #5; the HTML is the simplest first form.
 - Luis: decrypt needs your private key (`age` CLI or `pip install pyrage`).
 
-## Phase 4 — landing page
-- [ ] `c-lab.tools` tool page (ARGUS), verified download (SHA-256 + notarization)
-- [ ] Link from the C-LAB desk + network map
+## Phase 4 — landing page  ✅ built (needs deploy + a published release)
+- [x] `landing/` ARGUS cyan tool page: hero, mac+win download buttons, 6 features, "what it finds / what it is not" honesty block, verify-SHA-256 note, bilingual EN-ES, CSP `_headers`. Verified in preview (EN+ES, no console errors).
+- [x] Release publishing wired for stable download names: `scripts/release-macos.sh` publishes `ComputerCheck-macOS.dmg` to the `v*` release; Windows workflow publishes `ComputerCheck-Windows-Setup.exe` + checksums on tag.
+- [ ] Deploy `landing/` to Cloudflare Pages → `computercheck.c-lab.tools`; link from the C-LAB desk + network map (Luis).
+- [ ] Publish a `v*` release (mac script + push the tag for Windows CI) so the download buttons resolve.
 
 ## Phase 5 — Windows  (code prep ✅ done; build needs a Windows runner)
 - [x] Vendored `checks_windows/` (24 checks) into the engine; `selfcheck.py` now OS-aware (macOS vs Windows dispatch).

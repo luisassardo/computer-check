@@ -34,6 +34,31 @@ python3 cc_ingest.py \
 
 Open `dashboard.html` in a browser. Re-run whenever new exports arrive.
 
+## What the dashboard shows
+
+Built for understanding patterns across organizations, not just listing devices:
+
+- **KPIs** — devices, organizations, scans, average score, % of devices with a
+  CRITICAL issue.
+- **What stands out** — auto-generated insight bullets (the most common fleet
+  issue, weakest category, orgs averaging below 55, and per-org failure clusters
+  like "BETA: 100% of devices fail Lockdown Mode").
+- **Fleet score over time** — average score binned by month across all scans.
+- **Where the fleet is weakest** — % of devices affected, broken down by attack
+  surface (from the Marco's vector IDs: Web, OS, Malware, Network, …) and by
+  category.
+- **Organizations** — one card per org (weakest first) with its average score,
+  score trend, device count, OS mix, and its single most common issue.
+- **Where each organization is failing** — an org × top-check heatmap: each cell
+  is the % of that org's devices failing that check, so you can see at a glance
+  that different orgs have different failure *profiles*.
+- **Most common failing checks** and a **per-device** table round it out.
+
+All of this is computed from the latest scan per device (deduped), counting each
+device once. Device pseudonyms and org codes only — no identities; evidence is
+never shown. IoC/spyware findings are not aggregated here (they come via the
+separate urgent channel).
+
 ## Collecting files (manual workflow)
 
 Users send their `.age` file however they choose (Proton, Signal, email). Drop

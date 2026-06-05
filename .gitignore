@@ -24,3 +24,7 @@ dev-age-identity.txt
 
 # os
 .DS_Store
+
+# ingest output (contains decrypted data)
+ingest/dashboard.html
+ingest/_preview-dashboard.html

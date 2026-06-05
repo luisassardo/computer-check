@@ -51,22 +51,19 @@ This builds the engine, then `tauri build --target universal-apple-darwin
 --config src-tauri/tauri.release.conf.json`, then notarizes and staples the dmg.
 Mirrors `../api-pass/scripts/release-macos.sh`.
 
-## The C-LAB age recipient key (IMPORTANT before real use)
+## The C-LAB age recipient key
 
-The encrypted export is sealed to `CLAB_AGE_RECIPIENT` in
-`src-tauri/src/lib.rs`. The committed value is a DEV throwaway whose private half
-is in `dev-age-identity.txt` (gitignored), used only to verify the round trip.
+The encrypted export is sealed to `CLAB_AGE_RECIPIENT` in `src-tauri/src/lib.rs`.
+As of 2026-06-05 this is C-LAB's **production** public key; the matching private
+key is held offline by Luis only and never lives in this repo.
 
-Before distributing to real users, Luis must:
-1. Generate a real keypair: `brew install age && age-keygen -o clab-identity.txt`
-   (or `cargo test age_roundtrip -- --nocapture`, which prints a fresh pair).
-2. Replace `CLAB_AGE_RECIPIENT` with the new **public** key (`age1...`).
-3. Store the **private** key offline; never commit it. It is what decrypts every
-   report users send.
-4. Update (or remove) the `baked_recipient_decryptable` test, which hardcodes the
-   dev private key.
+Decrypt a received export: `age -d -i <your-identity-file> ComputerCheck-export.age`
+(or via the ingest tool, which wraps this).
 
-Decrypt a received export: `age -d -i clab-identity.txt ComputerCheck-export.age`.
+To rotate: `age-keygen -o new-identity.txt`, replace `CLAB_AGE_RECIPIENT` with the
+new `age1...` public key, keep the new private key safe + backed up, bump the
+version, and re-release. The old key's submissions stay readable with the old
+identity file, so keep retired identity files until their exports are ingested.
 
 ## Windows build (via GitHub Actions)
 

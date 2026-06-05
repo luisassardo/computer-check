@@ -152,16 +152,10 @@ fn decrypt(blob: &[u8]) -> Result<String, String> {
 // below. Only the holder of the matching private key (Luis) can decrypt it, so
 // the file is safe to send over any channel (Proton, Signal, upload, in person).
 //
-// !!! DEV PLACEHOLDER KEY !!!
-// The recipient below is a throwaway dev key generated for testing the round
-// trip. BEFORE any real use, Luis must:
-//   1. Generate his own keypair (age-keygen, or `cargo test age_roundtrip
-//      -- --nocapture` prints a fresh pair).
-//   2. Replace CLAB_AGE_RECIPIENT with HIS public key (age1...).
-//   3. Keep the private key (AGE-SECRET-KEY-...) offline; never commit it.
-// DEV key generated 2026-06-05 for testing only. Private half is in
-// ../dev-age-identity.txt (gitignored). REPLACE with Luis's real public key.
-const CLAB_AGE_RECIPIENT: &str = "age13mm247qk8g2c8rn07ku9vksa7w2m7t0gmnudwkx4c6pday4xyqzqfjnu5n";
+// C-LAB production recipient (set 2026-06-05). The matching private key is held
+// offline by Luis only; it never lives in this repo. To rotate, replace this with
+// a new `age1...` public key from `age-keygen` and keep the new private key safe.
+const CLAB_AGE_RECIPIENT: &str = "age1p20uvq4wl0kfs6wga2jldszu4f6k4t7mf565vp8j4dptuq9m7ppspsq83e";
 
 fn age_encrypt(plaintext: &[u8], recipient_str: &str) -> Result<Vec<u8>, String> {
     use std::io::Write;
@@ -435,26 +429,16 @@ mod tests {
         assert_eq!(out, pt, "round-trip mismatch");
     }
 
-    // Proves a file encrypted to the BAKED CLAB_AGE_RECIPIENT is decryptable by
-    // the matching dev private key (the one in ../dev-age-identity.txt). This is
-    // the real export path. When Luis swaps in his key, update this identity too
-    // (or delete this test).
+    // The baked C-LAB recipient must be a valid age public key and produce a real
+    // age file. We can't decrypt here (only Luis holds the private key), so we
+    // assert the recipient parses and the encrypt path yields an age envelope.
     #[test]
-    fn baked_recipient_decryptable() {
-        const DEV_IDENTITY: &str =
-            "AGE-SECRET-KEY-1K9WQ60JNNCU2W4LFDD9LFQ867WE45LCQF2CC5UQW0SA3E79LQCAQ5YU4JT";
-        let id: age::x25519::Identity = DEV_IDENTITY.parse().expect("parse dev identity");
-        let pt = b"{\"export_kind\":\"routine\"}";
-        let ct = age_encrypt(pt, CLAB_AGE_RECIPIENT).expect("encrypt to baked key");
-        let dec = match age::Decryptor::new(&ct[..]).expect("decryptor") {
-            age::Decryptor::Recipients(d) => d,
-            _ => panic!("expected recipients decryptor"),
-        };
-        let mut reader = dec
-            .decrypt(std::iter::once(&id as &dyn age::Identity))
-            .expect("decrypt with dev key");
-        let mut out = Vec::new();
-        reader.read_to_end(&mut out).expect("read");
-        assert_eq!(out, pt, "baked key did not round-trip with dev identity");
+    fn baked_recipient_valid() {
+        CLAB_AGE_RECIPIENT
+            .parse::<age::x25519::Recipient>()
+            .expect("CLAB_AGE_RECIPIENT is not a valid age public key");
+        let ct = age_encrypt(b"{\"export_kind\":\"routine\"}", CLAB_AGE_RECIPIENT)
+            .expect("encrypt to baked key");
+        assert!(ct.starts_with(b"age-encryption.org/v1"), "not an age file");
     }
 }

@@ -96,7 +96,15 @@ def _check_windows_version(ctx: ScanContext) -> Finding:
     min_supported = SUPPORTED_BUILDS_MIN.get(major, 0)
     supported = build >= min_supported and is_win11  # only Win11 fully supported in 2026
 
-    evidence = f"{product}\nVersion: {display}\nBuild: {build}.{ubr}"
+    # Derive the display OS name from the build number, NOT from ProductName.
+    # On Windows 11, HKLM ProductName still literally reads "Windows 10 Pro"
+    # (a long-standing Microsoft quirk — the key was never updated for Win11),
+    # which would otherwise print a confusing "Windows 10 Pro" line on a Win11
+    # device. Preserve the SKU suffix (e.g. "Pro", "Home") from ProductName but
+    # force the correct "Windows 11"/"Windows 10" prefix off the build number.
+    edition = re.sub(r"^\s*Windows\s+1[01]\s*", "", product or "").strip()
+    os_name = f"Windows {major}" + (f" {edition}" if edition else "")
+    evidence = f"{os_name}\nVersion: {display}\nBuild: {build}.{ubr}"
 
     if supported:
         return Finding(

@@ -88,6 +88,16 @@ def build_payload(ctx: ScanContext, findings: list, summary: dict) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # On Windows, sys.stdout defaults to the legacy cp1252 codec, which cannot
+    # encode the Unicode in findings (e.g. the "→" arrow), making json.dump
+    # crash. The JSON-on-stdout contract requires UTF-8, so force it here.
+    # macOS/Linux are already UTF-8; reconfigure is a no-op there.
+    for _stream in (sys.stdout, sys.stderr):
+        try:
+            _stream.reconfigure(encoding="utf-8")
+        except (AttributeError, ValueError):
+            pass
+
     parser = argparse.ArgumentParser(
         prog="computer-check",
         description="ComputerCheck v%s — read-only self-assessment for your own Mac." % __version__,

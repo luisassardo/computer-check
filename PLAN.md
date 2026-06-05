@@ -31,6 +31,8 @@ Full spec: `../securityscan-usb/SELFCHECK-SPEC.md`.
 - [x] `ingest/cc_ingest.py`: decrypt a folder of `.age` exports with Luis's key (age CLI or pyrage; also accepts plain `.json`), aggregate v2 payloads.
 - [x] Self-contained ARGUS HTML dashboard: KPIs, per-org cohorts, per-device pseudonym score trend (sparkline), most-common failing checks across the fleet. Privacy: pseudonyms + org codes only, evidence omitted, IoC out-of-band.
 - [x] Verified end-to-end: 11 synthetic exports encrypted to the baked pubkey (pyrage) → decrypted with the dev key → 6 devices / 3 orgs dashboard rendered.
+- [x] Collection model DECIDED: **manual** (users send via Proton/Signal/email; drop into a folder). No infra now; a Cloudflare upload endpoint is a later option if volume grows.
+- [x] Collision-safe export filenames: `ComputerCheck-<ORG>-<YYYYMMDD>-<pseudonym8>.age` (PDFs stay date-only, they're personal). Ingest recurses subfolders + dedupes by (pseudonym, scan_id). Verified.
 - [ ] Decide DB home (this HTML / SQLite / D1 / Airtable) — open question #5; the HTML is the simplest first form.
 - Luis: decrypt needs your private key (`age` CLI or `pip install pyrage`).
 

@@ -54,6 +54,18 @@
     const p = (n) => String(n).padStart(2, "0");
     return "" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate());
   }
+  // Collision-safe stem for the .age exports you collect: org code + date +
+  // first 8 of the random device pseudonym. So two same-day files from different
+  // devices never share a name. Aggregation still keys on the payload, not this.
+  function exportStem() {
+    const s = (lastPayload && lastPayload.scan) || {};
+    const org = String(s.org_code || "").toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 16);
+    const pseudo = String(s.device_pseudonym || "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 8) || "device";
+    const parts = ["ComputerCheck"];
+    if (org) parts.push(org);
+    parts.push(scanYmd(), pseudo);
+    return parts.join("-");
+  }
 
   // ---- scan ----------------------------------------------------------------
   const scanBtn = $("#scan-btn");
@@ -232,7 +244,7 @@
         export_kind: "routine",
         findings: lastPayload.findings.filter((f) => !isIoC(f)),
       });
-      saveAge("ComputerCheck-" + scanYmd() + "-export.age", routine, $("#export-status"));
+      saveAge(exportStem() + ".age", routine, $("#export-status"));
     });
   }
 
@@ -242,7 +254,7 @@
     iocBtn.addEventListener("click", () => {
       if (!lastPayload || !iocConsent.checked) return;
       const urgent = Object.assign({}, lastPayload, { export_kind: "urgent" });
-      saveAge("ComputerCheck-" + scanYmd() + "-URGENT.age", urgent, $("#ioc-status"));
+      saveAge(exportStem() + "-URGENT.age", urgent, $("#ioc-status"));
     });
   }
 

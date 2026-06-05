@@ -34,6 +34,21 @@ python3 cc_ingest.py \
 
 Open `dashboard.html` in a browser. Re-run whenever new exports arrive.
 
+## Collecting files (manual workflow)
+
+Users send their `.age` file however they choose (Proton, Signal, email). Drop
+everything into your `--in` folder — **structure doesn't matter**:
+
+- The tool **recurses** into subfolders, so you can sort by month/org or just
+  dump files in. e.g. `inbox/2026-06/`, `inbox/org-a/`, whatever.
+- The app names exports `ComputerCheck-<ORG>-<YYYYMMDD>-<pseudonym8>.age`, so
+  files from different devices won't collide. If two files still end up with the
+  same name (e.g. saved from the same email twice), keep them in separate
+  subfolders — the tool reads both.
+- **Deduplication** is by `(device pseudonym, scan id)`: the same scan submitted
+  twice is counted once; a real rescan of a device keeps its own id and shows up
+  in that device's trend. Filenames are never used to identify scans.
+
 ## Notes
 
 - Inputs can mix `.age` and `.json`, so you can test the aggregation with plain

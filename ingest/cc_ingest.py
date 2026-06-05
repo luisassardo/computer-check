@@ -71,28 +71,40 @@ def decrypt_age(path: Path, identity: Path | None) -> bytes:
 
 
 def load_payloads(in_dir: Path, identity: Path | None, keep_json: Path | None) -> list[dict]:
+    """Walk the inbox recursively (so you can dump files anywhere under it) and
+    dedupe by (device_pseudonym, scan_id) — so a scan submitted twice, or an OS
+    `…(1).age` duplicate, is counted once. Genuine rescans of a device keep their
+    own scan_id and remain as the time series. Filenames are otherwise ignored;
+    aggregation keys on the payload contents.
+    """
     payloads: list[dict] = []
-    for f in sorted(in_dir.iterdir()):
-        if f.is_dir():
+    seen: set[tuple[str, str]] = set()
+    dupes = 0
+    for f in sorted(in_dir.rglob("*")):
+        if not f.is_file() or f.suffix not in (".age", ".json"):
             continue
         try:
-            if f.suffix == ".age":
-                raw = decrypt_age(f, identity)
-            elif f.suffix == ".json":
-                raw = f.read_bytes()
-            else:
-                continue
+            raw = decrypt_age(f, identity) if f.suffix == ".age" else f.read_bytes()
             data = json.loads(raw)
         except Exception as e:
             print(f"[ingest] skipped {f.name}: {e}", file=sys.stderr)
             continue
-        if data.get("schema", "").startswith("securityscan.findings/"):
-            payloads.append(data)
-            if keep_json and f.suffix == ".age":
-                keep_json.mkdir(parents=True, exist_ok=True)
-                (keep_json / (f.stem + ".json")).write_bytes(raw)
-        else:
+        if not data.get("schema", "").startswith("securityscan.findings/"):
             print(f"[ingest] skipped {f.name}: not a findings payload", file=sys.stderr)
+            continue
+        s = data.get("scan", {})
+        key = (s.get("device_pseudonym") or "?", s.get("id") or "?")
+        if key in seen:
+            dupes += 1
+            continue
+        seen.add(key)
+        payloads.append(data)
+        if keep_json and f.suffix == ".age":
+            keep_json.mkdir(parents=True, exist_ok=True)
+            name = f"{(s.get('device_pseudonym') or 'device')[:8]}-{s.get('id') or 'scan'}.json"
+            (keep_json / name).write_bytes(raw)
+    if dupes:
+        print(f"[ingest] skipped {dupes} duplicate scan(s) (same device + scan id)", file=sys.stderr)
     return payloads
 
 

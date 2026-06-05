@@ -27,10 +27,12 @@ Full spec: `../securityscan-usb/SELFCHECK-SPEC.md`.
 - [ ] **Luis: replace the DEV age key** (`CLAB_AGE_RECIPIENT` in src-tauri/src/lib.rs) with your real public key; keep private offline. Dev key + instructions in `dev-age-identity.txt` (gitignored).
 - decision: `evidence` IS included in the routine export (full diagnostics, encrypted to C-LAB). Resolves spec open Q#3. Add a sanitize toggle later if desired.
 
-## Phase 3 — operator ingest + cohort dashboard
-- [ ] Local `age` decrypt CLI for Luis
-- [ ] Extend `dashboard.py`: per-org cohorts + per-device pseudonym trend
-- [ ] Decide DB home (extend dashboard / SQLite / D1 / Airtable)
+## Phase 3 — operator ingest + cohort dashboard  ✅ built + verified
+- [x] `ingest/cc_ingest.py`: decrypt a folder of `.age` exports with Luis's key (age CLI or pyrage; also accepts plain `.json`), aggregate v2 payloads.
+- [x] Self-contained ARGUS HTML dashboard: KPIs, per-org cohorts, per-device pseudonym score trend (sparkline), most-common failing checks across the fleet. Privacy: pseudonyms + org codes only, evidence omitted, IoC out-of-band.
+- [x] Verified end-to-end: 11 synthetic exports encrypted to the baked pubkey (pyrage) → decrypted with the dev key → 6 devices / 3 orgs dashboard rendered.
+- [ ] Decide DB home (this HTML / SQLite / D1 / Airtable) — open question #5; the HTML is the simplest first form.
+- Luis: decrypt needs your private key (`age` CLI or `pip install pyrage`).
 
 ## Phase 4 — landing page
 - [ ] `c-lab.tools` tool page (ARGUS), verified download (SHA-256 + notarization)

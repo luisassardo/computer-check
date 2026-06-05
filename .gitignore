@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# rust / tauri build output
+src-tauri/target/
+src-tauri/gen/schemas/
+
+# bundled engine (built by scripts/build-engine.sh)
+src-tauri/engine-dist/
+
+# pyinstaller
+build/
+dist/
+*.spec
+
+# python caches
+__pycache__/
+*.pyc
+
+# age private keys (never commit)
+dev-age-identity.txt
+*-identity.txt
+*.secret
+
+# os
+.DS_Store

@@ -13,7 +13,11 @@
    center the hero so it doesn't look lopsided. */
 main { grid-template-columns: 1fr; max-width: 940px; margin-inline: auto; align-items: start; }
 .identity { text-align: center; }
-.identity .eyebrow { justify-content: center; }
+/* .identity is a flex column with align-items:flex-start, so shrink-width items
+   (eyebrow) and max-width blocks (title, desc) pin left even with centered text.
+   Center them as flex items. */
+.identity .eyebrow { align-self: center; }
+.identity .title { margin-inline: auto; }
 .identity .desc { margin-inline: auto; }
 .identity .cta-row { justify-content: center; }
 .identity .verify { justify-content: center; }

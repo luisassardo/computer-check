@@ -7,7 +7,7 @@
 #
 # Recommended (one-time, you type the password into Apple's tool):
 #   xcrun notarytool store-credentials "computercheck-notary" \
-#     --apple-id "luisassardo@me.com" --team-id "LWSXUT3Y4S"
+#     --apple-id "your-apple-id@example.com" --team-id "LWSXUT3Y4S"
 #   APPLE_KEYCHAIN_PROFILE="computercheck-notary" APPLE_TEAM_ID="LWSXUT3Y4S" \
 #     bash scripts/release-macos.sh
 #

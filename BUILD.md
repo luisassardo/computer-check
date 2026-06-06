@@ -41,7 +41,7 @@ single self-contained engine binary:
 ## One-command signed release
 
 ```sh
-APPLE_ID="luisassardo@me.com" \
+APPLE_ID="your-apple-id@example.com" \
 APPLE_PASSWORD="xxxx-xxxx-xxxx-xxxx" \
 APPLE_TEAM_ID="LWSXUT3Y4S" \
 bash scripts/release-macos.sh

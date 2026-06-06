@@ -25,6 +25,7 @@ import argparse
 import html
 import json
 import shutil
+import sqlite3
 import subprocess
 import sys
 import time
@@ -111,6 +112,105 @@ def load_payloads(in_dir: Path, identity: Path | None, keep_json: Path | None) -
 # --------------------------------------------------------------------------
 # Aggregation
 # --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
+# SQLite persistence (accumulate across runs; queryable with plain SQL)
+# --------------------------------------------------------------------------
+
+DB_SCHEMA = """
+CREATE TABLE IF NOT EXISTS scans (
+  uid              TEXT PRIMARY KEY,   -- pseudonym:scan_id
+  scan_id          TEXT,
+  device_pseudonym TEXT,
+  org_code         TEXT,
+  os_name          TEXT,
+  os_version       TEXT,
+  arch             TEXT,
+  started_at       REAL,
+  started_at_iso   TEXT,
+  score            INTEGER,
+  by_status        TEXT,               -- json
+  tool_version     TEXT,
+  ingested_at      TEXT
+);
+CREATE TABLE IF NOT EXISTS findings (
+  uid        TEXT,                      -- scan uid
+  finding_id TEXT,
+  title      TEXT,
+  category   TEXT,
+  severity   TEXT,
+  status     TEXT,
+  vector_ids TEXT,                      -- json
+  PRIMARY KEY (uid, finding_id),
+  FOREIGN KEY (uid) REFERENCES scans(uid)
+);
+CREATE INDEX IF NOT EXISTS idx_scans_org ON scans(org_code);
+CREATE INDEX IF NOT EXISTS idx_scans_dev ON scans(device_pseudonym);
+CREATE INDEX IF NOT EXISTS idx_find_status ON findings(status);
+CREATE INDEX IF NOT EXISTS idx_find_sev ON findings(severity);
+"""
+
+
+def db_open(path: Path) -> sqlite3.Connection:
+    conn = sqlite3.connect(str(path))
+    conn.executescript(DB_SCHEMA)
+    return conn
+
+
+def db_store(conn: sqlite3.Connection, payloads: list[dict]) -> int:
+    """Insert new scans, idempotent by pseudonym:scan_id (re-submissions and
+    duplicates are skipped). Stores finding metadata only — never `evidence`.
+    Returns the number of newly added scans."""
+    now = time.strftime("%Y-%m-%dT%H:%M:%S")
+    added = 0
+    for p in payloads:
+        s = p.get("scan", {}); summ = p.get("summary", {})
+        pid = s.get("device_pseudonym") or "unknown"
+        uid = f"{pid}:{s.get('id') or '?'}"
+        cur = conn.execute(
+            "INSERT OR IGNORE INTO scans (uid,scan_id,device_pseudonym,org_code,os_name,os_version,"
+            "arch,started_at,started_at_iso,score,by_status,tool_version,ingested_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (uid, s.get("id") or "?", pid, s.get("org_code") or "(none)", s.get("os_name") or "?",
+             s.get("os_version") or "", s.get("arch") or "", float(s.get("started_at") or 0),
+             s.get("started_at_iso") or "", int(summ.get("score") or 0),
+             json.dumps(summ.get("by_status", {})), p.get("tool_version") or "", now),
+        )
+        if cur.rowcount:
+            added += 1
+            conn.executemany(
+                "INSERT OR IGNORE INTO findings (uid,finding_id,title,category,severity,status,vector_ids) "
+                "VALUES (?,?,?,?,?,?,?)",
+                [(uid, f.get("id", ""), f.get("title", ""), f.get("category", ""),
+                  f.get("severity", "INFO"), f.get("status", ""), json.dumps(f.get("vector_ids") or []))
+                 for f in p.get("findings", [])],
+            )
+    conn.commit()
+    return added
+
+
+def db_load_payloads(conn: sqlite3.Connection) -> list[dict]:
+    """Rebuild payload dicts from the DB so aggregate() can consume them."""
+    finds_by_uid: dict[str, list] = {}
+    for uid, fid, title, cat, sev, status, vids in conn.execute(
+        "SELECT uid,finding_id,title,category,severity,status,vector_ids FROM findings"):
+        finds_by_uid.setdefault(uid, []).append({
+            "id": fid, "title": title, "category": cat, "severity": sev,
+            "status": status, "vector_ids": json.loads(vids or "[]"),
+        })
+    out = []
+    for (uid, sid, pid, org, osn, osv, arch, sa, iso, score, bys, tv) in conn.execute(
+        "SELECT uid,scan_id,device_pseudonym,org_code,os_name,os_version,arch,started_at,"
+        "started_at_iso,score,by_status,tool_version FROM scans"):
+        out.append({
+            "schema": "securityscan.findings/2", "tool_version": tv,
+            "scan": {"id": sid, "device_pseudonym": pid, "org_code": org, "os_name": osn,
+                     "os_version": osv, "arch": arch, "started_at": sa, "started_at_iso": iso},
+            "summary": {"score": score, "by_status": json.loads(bys or "{}")},
+            "findings": finds_by_uid.get(uid, []),
+        })
+    return out
+
 
 # Vector-ID prefixes -> human attack-surface names (Luis's Marco de Seguridad).
 VECTOR_SURFACE = {
@@ -511,30 +611,63 @@ def render_html(stats: dict, generated_iso: str) -> str:
 # --------------------------------------------------------------------------
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="cc_ingest", description="Decrypt + aggregate ComputerCheck exports.")
-    ap.add_argument("--in", dest="in_dir", required=True, help="Folder of .age and/or .json exports.")
+    ap = argparse.ArgumentParser(
+        prog="cc_ingest",
+        description="Decrypt ComputerCheck exports into an accumulating SQLite DB + dashboard.")
+    ap.add_argument("--in", dest="in_dir", default="", help="Folder of new .age/.json exports to ingest (optional).")
     ap.add_argument("--identity", default="", help="age private key file (needed for .age).")
+    ap.add_argument("--db", default="cc.db", help="SQLite database (accumulates across runs). Default: cc.db")
     ap.add_argument("--out", default="dashboard.html", help="Output HTML path.")
     ap.add_argument("--keep-json", default="", help="Optional folder to write decrypted .json copies.")
+    ap.add_argument("--sql", default="", help="Run a SQL query against the DB, print rows, and exit.")
+    ap.add_argument("--no-dashboard", action="store_true", help="Ingest only; do not render HTML.")
     args = ap.parse_args(argv)
 
-    in_dir = Path(args.in_dir).expanduser()
-    if not in_dir.is_dir():
-        print(f"--in not a folder: {in_dir}", file=sys.stderr)
-        return 2
-    identity = Path(args.identity).expanduser() if args.identity else None
-    keep = Path(args.keep_json).expanduser() if args.keep_json else None
+    conn = db_open(Path(args.db).expanduser())
 
-    payloads = load_payloads(in_dir, identity, keep)
+    # Ad-hoc query mode: just run SQL and print (tab-separated, with a header).
+    if args.sql:
+        try:
+            cur = conn.execute(args.sql)
+        except sqlite3.Error as e:
+            print(f"SQL error: {e}", file=sys.stderr)
+            return 2
+        if cur.description:
+            print("\t".join(c[0] for c in cur.description))
+            for row in cur.fetchall():
+                print("\t".join("" if v is None else str(v) for v in row))
+        else:
+            conn.commit()
+        return 0
+
+    # Ingest new files (if any) into the DB.
+    added = 0
+    if args.in_dir:
+        in_dir = Path(args.in_dir).expanduser()
+        if not in_dir.is_dir():
+            print(f"--in not a folder: {in_dir}", file=sys.stderr)
+            return 2
+        identity = Path(args.identity).expanduser() if args.identity else None
+        keep = Path(args.keep_json).expanduser() if args.keep_json else None
+        added = db_store(conn, load_payloads(in_dir, identity, keep))
+
+    # Build the dashboard from EVERYTHING in the DB (all runs to date).
+    payloads = db_load_payloads(conn)
+
+    if args.no_dashboard:
+        print(f"[ingest] +{added} new scan(s) · {len(payloads)} total in {args.db}")
+        return 0
+
     if not payloads:
-        print("No valid payloads found.", file=sys.stderr)
-        return 1
+        # Always render something so the launcher opens a real page, even before
+        # any reports have arrived.
+        print("[ingest] no reports yet — drop .age files in the inbox and re-run.")
 
     stats = aggregate(payloads)
     out = Path(args.out).expanduser()
     out.write_text(render_html(stats, time.strftime("%Y-%m-%d %H:%M")), encoding="utf-8")
-    print(f"[ingest] {len(payloads)} payloads · {stats['n_devices']} devices · "
-          f"{stats['n_orgs']} orgs → {out}")
+    print(f"[ingest] +{added} new · {len(payloads)} total scans · {stats['n_devices']} devices · "
+          f"{stats['n_orgs']} orgs → {out}  (db: {args.db})")
     return 0
 
 

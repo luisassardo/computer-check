@@ -9,6 +9,32 @@ part of the shipped app, and it should stay offline. The dashboard shows org cod
 and device pseudonyms only — never real names — and never renders the `evidence`
 field.
 
+## The easy way (double-click)
+
+1. Put the `.age` files users send you into the **`inbox/`** folder (subfolders OK).
+2. Double-click **`Open Dashboard.command`** in this folder.
+
+It decrypts any new reports with your private key, adds them to `cc.db`, rebuilds
+`dashboard.html`, and opens it in your browser. Re-dropping the same file is safe
+(de-duped), and reports stay in `cc.db` even after you delete their files.
+
+The launcher looks for your age private key at `~/clab-computercheck-identity.txt`
+(then `~/clab-identity.txt`). If yours is elsewhere, open `Open Dashboard.command`
+in a text editor and set the `IDENTITY=` line, or run it with
+`CC_IDENTITY=/path/to/key open "Open Dashboard.command"`.
+
+## Querying the data (SQLite)
+
+Everything accumulates in `cc.db`. Ask it anything:
+
+```sh
+python3 cc_ingest.py --db cc.db --sql "SELECT org_code, ROUND(AVG(score)) FROM scans GROUP BY org_code ORDER BY 2"
+python3 cc_ingest.py --db cc.db --sql "SELECT title, COUNT(*) FROM findings WHERE status='FAIL' GROUP BY title ORDER BY 2 DESC LIMIT 10"
+```
+
+…or open `cc.db` in any SQLite browser. Tables: `scans` (one row per scan) and
+`findings` (one row per finding, no evidence stored).
+
 ## Requirements
 
 - Python 3.

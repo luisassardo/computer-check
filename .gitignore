@@ -28,3 +28,8 @@ dev-age-identity.txt
 # ingest output (contains decrypted data)
 ingest/dashboard.html
 ingest/_preview-dashboard.html
+ingest/cc.db
+ingest/cc.db-journal
+ingest/inbox/*
+!ingest/inbox/.gitkeep
+!ingest/inbox/README.txt

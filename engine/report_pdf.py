@@ -18,6 +18,11 @@ from pathlib import Path
 from . import __version__
 from .core import Finding, ScanContext, Severity, Status
 
+# fpdf2 warns at import that Pillow is unavailable; we ship without Pillow on
+# purpose (text-only reports), so silence that one benign warning.
+import warnings
+warnings.filterwarnings("ignore", message=".*Pillow.*")
+
 
 def _finding_from_dict(d: dict) -> Finding:
     return Finding(

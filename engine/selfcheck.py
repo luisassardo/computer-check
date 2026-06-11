@@ -31,6 +31,26 @@ from . import __version__
 from .core import ScanContext, Scanner, summarize, Status
 
 
+def _force_utf8_stdio() -> None:
+    """Reconfigure stdout/stderr to UTF-8.
+
+    The JSON payload contains non-ASCII characters from finding text
+    (e.g. arrows like → in remediation steps, umlauts in German fields).
+    On Windows, sys.stdout defaults to cp1252 and json.dump raises
+    UnicodeEncodeError on the first such character.
+
+    PyInstaller wraps stdout differently across versions; .reconfigure() is
+    available on regular TextIOWrappers but may not be on the wrapped streams.
+    Guarded by hasattr() so this never breaks the bundled binary.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            if hasattr(stream, "reconfigure"):
+                stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+
 def _register_macos_checks(scanner: Scanner, only: str = "") -> None:
     from .checks_macos import cat01_updates, cat02_malware
 
@@ -88,6 +108,9 @@ def build_payload(ctx: ScanContext, findings: list, summary: dict) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # MUST run before any JSON is written to stdout — see _force_utf8_stdio docstring.
+    _force_utf8_stdio()
+
     parser = argparse.ArgumentParser(
         prog="computer-check",
         description="ComputerCheck v%s — read-only self-assessment for your own Mac." % __version__,

@@ -193,7 +193,8 @@ def _detect_os_version() -> str:
     if s == "Darwin":
         try:
             r = subprocess.run(["sw_vers", "-productVersion"],
-                               capture_output=True, text=True, timeout=5)
+                               capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", timeout=5)
             if r.returncode == 0:
                 return r.stdout.strip()
         except Exception:
@@ -242,6 +243,12 @@ def run_cmd(args: list[str] | str, timeout: int = 15, shell: bool = False) -> Cm
     """Run a command read-only and capture its output.
 
     Never raises; always returns a CmdResult. Timeouts are caught.
+
+    Encoding: we force UTF-8 with errors='replace'. On Windows, Python's default
+    is cp1252, which crashes in _readerthread when a subprocess emits any byte
+    outside latin-1 (German umlauts in localized PowerShell errors, arrows in
+    progress output, etc.). 'replace' substitutes invalid bytes rather than
+    raising — slightly lossy but never blocks the scan.
     """
     cmd_str = args if isinstance(args, str) else " ".join(args)
     try:
@@ -249,6 +256,8 @@ def run_cmd(args: list[str] | str, timeout: int = 15, shell: bool = False) -> Cm
             args,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=timeout,
             shell=shell,
         )

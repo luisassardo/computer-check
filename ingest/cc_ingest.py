@@ -130,6 +130,7 @@ CREATE TABLE IF NOT EXISTS scans (
   started_at_iso   TEXT,
   score            INTEGER,
   by_status        TEXT,               -- json
+  tool             TEXT,               -- "computer-check" | "mobile-check"
   tool_version     TEXT,
   ingested_at      TEXT
 );
@@ -154,6 +155,12 @@ CREATE INDEX IF NOT EXISTS idx_find_sev ON findings(severity);
 def db_open(path: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(str(path))
     conn.executescript(DB_SCHEMA)
+    # Migrate DBs created before the `tool` column existed (CREATE IF NOT EXISTS
+    # does not add columns to an existing table).
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(scans)")}
+    if "tool" not in cols:
+        conn.execute("ALTER TABLE scans ADD COLUMN tool TEXT")
+        conn.commit()
     return conn
 
 
@@ -169,12 +176,12 @@ def db_store(conn: sqlite3.Connection, payloads: list[dict]) -> int:
         uid = f"{pid}:{s.get('id') or '?'}"
         cur = conn.execute(
             "INSERT OR IGNORE INTO scans (uid,scan_id,device_pseudonym,org_code,os_name,os_version,"
-            "arch,started_at,started_at_iso,score,by_status,tool_version,ingested_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "arch,started_at,started_at_iso,score,by_status,tool,tool_version,ingested_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (uid, s.get("id") or "?", pid, s.get("org_code") or "(none)", s.get("os_name") or "?",
              s.get("os_version") or "", s.get("arch") or "", float(s.get("started_at") or 0),
              s.get("started_at_iso") or "", int(summ.get("score") or 0),
-             json.dumps(summ.get("by_status", {})), p.get("tool_version") or "", now),
+             json.dumps(summ.get("by_status", {})), p.get("tool") or "", p.get("tool_version") or "", now),
         )
         if cur.rowcount:
             added += 1
@@ -199,11 +206,11 @@ def db_load_payloads(conn: sqlite3.Connection) -> list[dict]:
             "status": status, "vector_ids": json.loads(vids or "[]"),
         })
     out = []
-    for (uid, sid, pid, org, osn, osv, arch, sa, iso, score, bys, tv) in conn.execute(
+    for (uid, sid, pid, org, osn, osv, arch, sa, iso, score, bys, tool, tv) in conn.execute(
         "SELECT uid,scan_id,device_pseudonym,org_code,os_name,os_version,arch,started_at,"
-        "started_at_iso,score,by_status,tool_version FROM scans"):
+        "started_at_iso,score,by_status,tool,tool_version FROM scans"):
         out.append({
-            "schema": "securityscan.findings/2", "tool_version": tv,
+            "schema": "securityscan.findings/2", "tool": tool or "", "tool_version": tv,
             "scan": {"id": sid, "device_pseudonym": pid, "org_code": org, "os_name": osn,
                      "os_version": osv, "arch": arch, "started_at": sa, "started_at_iso": iso},
             "summary": {"score": score, "by_status": json.loads(bys or "{}")},

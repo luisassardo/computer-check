@@ -72,16 +72,29 @@ From the report you can create an **`age`-encrypted file** to send to the C-LAB
 research network. It is encrypted to C-LAB's public key, so only C-LAB can open
 it and the send channel does not have to be trusted. Two paths:
 
-- **Routine export** (`ComputerCheck-export.age`): all findings EXCEPT spyware /
-  IoC indicators, plus the org code and a random device pseudonym (no real name).
-- **Urgent channel** (`ComputerCheck-URGENT.age`): shown only if a spyware
+Files are named `ComputerCheck-<ORG>-<YYYYMMDD>-<pseudonym8>.age` (the `<ORG>`
+segment is omitted when no org code is set):
+
+- **Routine export**: all findings EXCEPT spyware / IoC indicators, plus the org
+  code and a random device pseudonym (no real name).
+- **Urgent channel** (same name plus a `-URGENT` suffix): shown only if a spyware
   indicator is found, behind an explicit consent checkbox, and includes the
   indicator detail so the team can help fast.
 
 Sending is always user-initiated. The recipient key lives in
-`src-tauri/src/lib.rs` (`CLAB_AGE_RECIPIENT`). The committed value is a DEV
-throwaway — replace it with the real C-LAB public key before any real use (see
-`BUILD.md`).
+`src-tauri/src/lib.rs` (`CLAB_AGE_RECIPIENT`).
+
+> **The committed value is the C-LAB PRODUCTION key** (baked 2026-06-05, commit
+> `1a31ea0`, which dropped the old dev key). **Do not "replace it before real
+> use"** — earlier revisions of this README said that, and it is wrong: swapping
+> it would orphan every export already in the field. The matching private key is
+> held offline by Luis and is never in this repo.
+>
+> **Rotating it is a fleet-wide operation:** the same constant is duplicated in
+> `mobile-check/src-tauri/src/lib.rs`, so a rotation means editing **both** repos
+> and re-releasing **both** signed binaries. Any copy you miss silently produces
+> files nobody can decrypt. (`field-lab`/SENTINEL deliberately does *not* add a
+> third copy — it reads its own recipient from its build manifest.)
 
 ## Privacy posture
 

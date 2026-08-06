@@ -44,7 +44,7 @@ def run(ctx: ScanContext) -> list[Finding]:
 # rotates supported builds. Source: learn.microsoft.com/lifecycle.
 SUPPORTED_BUILDS_MIN = {
     "11": 22631,   # Win11 23H2 minimum still receiving updates
-    "10": 19045,   # Win10 22H2 (last Win10) — extended security updates only after EOL
+    "10": 19045,   # Win10 22H2 (last Win10): extended security updates only after EOL
 }
 WIN10_EOL_DATE = "2025-10-14"  # Microsoft's official Win10 end-of-support
 
@@ -125,7 +125,7 @@ def _check_windows_version(ctx: ScanContext) -> Finding:
     if not is_win11:
         return Finding(
             id="WIN-CAT01-001",
-            title=f"Windows 10 detected — out of mainstream support since {WIN10_EOL_DATE}",
+            title=f"Windows 10 detected: out of mainstream support since {WIN10_EOL_DATE}",
             description="Windows 10 reached end of mainstream support in October 2025. Security updates require ESU (Extended Security Updates) subscription. For high-risk users, plan migration to Windows 11 on supported hardware.",
             category=CATEGORY,
             severity=Severity.CRITICAL,
@@ -137,12 +137,12 @@ def _check_windows_version(ctx: ScanContext) -> Finding:
             remediation="Upgrade to Windows 11 if hardware supports it (TPM 2.0 + UEFI + supported CPU). Run the PC Health Check app to verify. If hardware is not supported, plan device replacement.",
             interim_mitigation="Until upgrade: enroll the device in Microsoft's ESU program (paid for consumers as of 2025), uninstall Internet Explorer and legacy Edge, use a current Chromium browser, avoid opening untrusted documents, ensure Defender + tamper protection are on.",
             references=("https://learn.microsoft.com/en-us/lifecycle/products/windows-10-home-and-pro",),
-            title_de=f"Windows 10 erkannt — kein Mainstream-Support mehr seit {WIN10_EOL_DATE}",
+            title_de=f"Windows 10 erkannt: kein Mainstream-Support mehr seit {WIN10_EOL_DATE}",
             description_de="Windows 10 hat im Oktober 2025 das Ende des Mainstream-Supports erreicht. Sicherheitsupdates erfordern ein ESU-Abo (Extended Security Updates). Für Hochrisiko-Personen: Migration auf Windows 11 auf unterstützter Hardware planen.",
             remediation_de="Auf Windows 11 aktualisieren, wenn die Hardware es unterstützt (TPM 2.0 + UEFI + unterstützte CPU). Die App 'PC Health Check' bestätigt das. Wenn nicht unterstützt: Gerätewechsel planen.",
             interim_mitigation_de="Bis zum Upgrade: Gerät im ESU-Programm von Microsoft registrieren (für Privatkunden seit 2025 kostenpflichtig), Internet Explorer und legacy Edge deinstallieren, einen aktuellen Chromium-Browser nutzen, keine nicht vertrauenswürdigen Dokumente öffnen, sicherstellen dass Defender + Tamper Protection aktiv sind.",
             category_de=CATEGORY_DE,
-            title_es=f"Windows 10 detectado — sin soporte general desde {WIN10_EOL_DATE}",
+            title_es=f"Windows 10 detectado: sin soporte general desde {WIN10_EOL_DATE}",
             description_es="Windows 10 llegó al fin del soporte general en octubre de 2025. Las actualizaciones de seguridad requieren una suscripción ESU (Extended Security Updates). Para personas en alto riesgo, planifica la migración a Windows 11 en hardware compatible.",
             remediation_es="Actualiza a Windows 11 si el hardware lo soporta (TPM 2.0 + UEFI + CPU compatible). La app 'PC Health Check' lo confirma. Si el hardware no es compatible, planifica el reemplazo del equipo.",
             interim_mitigation_es="Hasta el upgrade: inscribe el equipo en el programa ESU de Microsoft (de pago para usuarios particulares desde 2025), desinstala Internet Explorer y el Edge antiguo, usa un navegador Chromium actual, evita abrir documentos no confiables y asegúrate de que Defender + la protección contra manipulación (Tamper Protection) estén activos.",
@@ -176,7 +176,7 @@ def _check_windows_version(ctx: ScanContext) -> Finding:
 # --- 1.2 Pending updates ----------------------------------------------------
 
 def _check_pending_updates() -> Finding:
-    # Use the WindowsUpdate COM object — no admin required for read.
+    # Use the WindowsUpdate COM object: no admin required for read.
     # Note: PowerShell escapes single quotes inside single-quoted strings as
     # '' (doubled), NOT \' as in bash. Mixing the two breaks the parser.
     script = (
@@ -247,7 +247,7 @@ def _check_pending_updates() -> Finding:
     return Finding(
         id="WIN-CAT01-002",
         title=f"{len(items)} pending Windows Update(s), {len(critical)} rated Critical/Important",
-        description="Targeted attacks rely on N-day exploits — slow patching directly increases exposure. Critical/Important updates should be installed within 24–72h.",
+        description="Targeted attacks rely on N-day exploits: slow patching directly increases exposure. Critical/Important updates should be installed within 24–72h.",
         category=CATEGORY,
         severity=Severity.HIGH if critical else Severity.MEDIUM,
         status=Status.FAIL,
@@ -261,12 +261,12 @@ def _check_pending_updates() -> Finding:
         remediation="Settings → Windows Update → Install all available updates. Reboot when prompted. For high-risk profiles, install Critical/Important within 24h.",
         interim_mitigation="If a reboot now is impossible, at minimum install Defender platform/signature updates (no reboot required) and enable Lockdown-equivalent mitigations: turn on Defender Application Guard for Edge if available.",
         title_de=f"{len(items)} ausstehende Windows-Update(s), {len(critical)} als Kritisch/Wichtig eingestuft",
-        description_de="Gezielte Angriffe nutzen N-Day-Exploits — langsames Patchen erhöht direkt deine Angriffsfläche. Kritische/Wichtige Updates sollten innerhalb von 24–72 h installiert werden.",
+        description_de="Gezielte Angriffe nutzen N-Day-Exploits: langsames Patchen erhöht direkt deine Angriffsfläche. Kritische/Wichtige Updates sollten innerhalb von 24–72 h installiert werden.",
         remediation_de="Einstellungen → Windows Update → alle verfügbaren Updates installieren. Bei Aufforderung neu starten. Bei Hochrisiko-Profilen: Kritisch/Wichtig binnen 24 h installieren.",
-        interim_mitigation_de="Wenn ein Neustart jetzt nicht möglich ist: zumindest Defender-Plattform/Signatur-Updates installieren (kein Neustart nötig) und Lockdown-ähnliche Maßnahmen aktivieren — Defender Application Guard für Edge einschalten, falls verfügbar.",
+        interim_mitigation_de="Wenn ein Neustart jetzt nicht möglich ist: zumindest Defender-Plattform/Signatur-Updates installieren (kein Neustart nötig) und Lockdown-ähnliche Maßnahmen aktivieren: Defender Application Guard für Edge einschalten, falls verfügbar.",
         category_de=CATEGORY_DE,
         title_es=f"{len(items)} actualización(es) de Windows pendiente(s), {len(critical)} clasificadas como Críticas/Importantes",
-        description_es="Los ataques dirigidos aprovechan exploits N-day — parchear lento aumenta directamente tu superficie de exposición. Las actualizaciones Críticas/Importantes deben instalarse en 24–72 h.",
+        description_es="Los ataques dirigidos aprovechan exploits N-day: parchear lento aumenta directamente tu superficie de exposición. Las actualizaciones Críticas/Importantes deben instalarse en 24–72 h.",
         remediation_es="Configuración → Windows Update → instala todas las actualizaciones disponibles. Reinicia cuando se te solicite. En perfiles de alto riesgo, instala las Críticas/Importantes dentro de 24 h.",
         interim_mitigation_es="Si reiniciar ahora es imposible, al menos instala las actualizaciones de plataforma/firmas de Defender (no requieren reinicio) y activa mitigaciones equivalentes a Lockdown: habilita Defender Application Guard para Edge si está disponible.",
         category_es=CATEGORY_ES,
@@ -331,7 +331,7 @@ def _check_auto_update_settings() -> Finding:
     if wua == "stopped":
         issues.append("wuauserv (Windows Update service) is stopped")
 
-    evidence = json.dumps(d, indent=2) if d else "(no policy keys present — defaults apply, which is OK)"
+    evidence = json.dumps(d, indent=2) if d else "(no policy keys present: defaults apply, which is OK)"
 
     if not issues:
         return Finding(
@@ -367,14 +367,14 @@ def _check_auto_update_settings() -> Finding:
         evidence=evidence + "\n\nIssues:\n" + "\n".join(f"  - {x}" for x in issues),
         standards=("CIS Win11 1.3",),
         vector_ids=("O-01",),
-        remediation="If this is a personal device, remove the WindowsUpdate policy keys (regedit → HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate) and start the wuauserv service. If managed by an employer's MDM, contact IT — they may have a reason but you should know what it is.",
+        remediation="If this is a personal device, remove the WindowsUpdate policy keys (regedit → HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate) and start the wuauserv service. If managed by an employer's MDM, contact IT: they may have a reason but you should know what it is.",
         title_de=f"Windows Update wird blockiert oder eingeschränkt ({len(issues)} Problem(e))",
         description_de="Eine oder mehrere Richtlinien-/Dienst-Einstellungen verhindern automatisches Patchen. Auf einem privaten Gerät ist das fast immer falsch.",
-        remediation_de="Wenn dies ein privates Gerät ist: WindowsUpdate-Richtlinienschlüssel entfernen (regedit → HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate) und den Dienst wuauserv starten. Wenn vom MDM des Arbeitgebers verwaltet: IT kontaktieren — sie haben evtl. einen Grund, den du kennen solltest.",
+        remediation_de="Wenn dies ein privates Gerät ist: WindowsUpdate-Richtlinienschlüssel entfernen (regedit → HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate) und den Dienst wuauserv starten. Wenn vom MDM des Arbeitgebers verwaltet: IT kontaktieren: sie haben evtl. einen Grund, den du kennen solltest.",
         category_de=CATEGORY_DE,
         title_es=f"Windows Update está bloqueado o restringido ({len(issues)} problema(s))",
         description_es="Una o más opciones de directiva/servicio impiden el parcheo automático. En un equipo personal esto casi siempre es un error.",
-        remediation_es="Si este es un equipo personal, elimina las claves de directiva de WindowsUpdate (regedit → HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate) e inicia el servicio wuauserv. Si lo gestiona el MDM de tu empleador, contacta a TI — pueden tener un motivo, pero deberías saber cuál es.",
+        remediation_es="Si este es un equipo personal, elimina las claves de directiva de WindowsUpdate (regedit → HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate) e inicia el servicio wuauserv. Si lo gestiona el MDM de tu empleador, contacta a TI: pueden tener un motivo, pero deberías saber cuál es.",
         category_es=CATEGORY_ES,
     )
 
@@ -395,14 +395,14 @@ def _check_defender_status() -> Finding:
             evidence=(r.stderr or r.exception)[:400],
             standards=("CIS Win11 18.10",),
             vector_ids=("M-01", "M-04"),
-            remediation="Settings → Privacy & Security → Windows Security → Virus & threat protection — confirm Real-time protection is on.",
+            remediation="Settings → Privacy & Security → Windows Security → Virus & threat protection: confirm Real-time protection is on.",
             title_de="Microsoft-Defender-Status konnte nicht gelesen werden",
             description_de="Prüft, dass Defenders Echtzeit-, Verhaltens- und Netzwerkschutz aktiv sind.",
-            remediation_de="Einstellungen → Datenschutz & Sicherheit → Windows-Sicherheit → Viren- & Bedrohungsschutz — bestätige, dass Echtzeitschutz aktiv ist.",
+            remediation_de="Einstellungen → Datenschutz & Sicherheit → Windows-Sicherheit → Viren- & Bedrohungsschutz: bestätige, dass Echtzeitschutz aktiv ist.",
             category_de=CATEGORY_DE,
             title_es="No se pudo leer el estado de Microsoft Defender",
             description_es="Verifica que las protecciones en tiempo real, de comportamiento y de red de Defender estén activas.",
-            remediation_es="Configuración → Privacidad y seguridad → Seguridad de Windows → Protección contra virus y amenazas — confirma que la protección en tiempo real esté activada.",
+            remediation_es="Configuración → Privacidad y seguridad → Seguridad de Windows → Protección contra virus y amenazas: confirma que la protección en tiempo real esté activada.",
             category_es=CATEGORY_ES,
         )
 
@@ -460,7 +460,7 @@ def _check_defender_status() -> Finding:
         interim_mitigation="If the third-party AV is the cause, check that it shows green in its own UI and that its definitions are <7 days old.",
         title_de=f"Microsoft Defender hat {len(failing)} Schutz(e) deaktiviert",
         description_de="Eine oder mehrere Defender-Schutzfunktionen sind aus. Meist bedeutet das, dass ein Drittanbieter-AV installiert ist (kann OK sein), oder Defender wurde absichtlich geschwächt (meist nicht OK).",
-        remediation_de="Wenn du absichtlich einen anderen AV nutzt: prüfe, dass er seriös und aktuell ist. Wenn nicht: Defender wieder aktivieren — Einstellungen → Datenschutz & Sicherheit → Windows-Sicherheit → Viren- & Bedrohungsschutz → Einstellungen verwalten → Schutz einschalten.",
+        remediation_de="Wenn du absichtlich einen anderen AV nutzt: prüfe, dass er seriös und aktuell ist. Wenn nicht: Defender wieder aktivieren: Einstellungen → Datenschutz & Sicherheit → Windows-Sicherheit → Viren- & Bedrohungsschutz → Einstellungen verwalten → Schutz einschalten.",
         interim_mitigation_de="Wenn der Drittanbieter-AV der Grund ist: bestätige, dass seine Oberfläche grün zeigt und seine Definitionen jünger als 7 Tage sind.",
         category_de=CATEGORY_DE,
         title_es=f"Microsoft Defender tiene {len(failing)} protección(es) desactivada(s)",
@@ -523,9 +523,9 @@ def _check_defender_signatures() -> Finding:
         title_es = f"Las firmas de Defender tienen {age} días (aceptable pero anticuadas)"
     else:
         sev, status = Severity.HIGH, Status.FAIL
-        title = f"Defender signatures are {age} days old — too stale"
-        title_de = f"Defender-Signaturen sind {age} Tage alt — zu veraltet"
-        title_es = f"Las firmas de Defender tienen {age} días — demasiado anticuadas"
+        title = f"Defender signatures are {age} days old (too stale)"
+        title_de = f"Defender-Signaturen sind {age} Tage alt (zu veraltet)"
+        title_es = f"Las firmas de Defender tienen {age} días (demasiado anticuadas)"
 
     return Finding(
         id="WIN-CAT01-005",
@@ -689,18 +689,18 @@ def _check_secure_boot() -> Finding:
             standards=("CIS Win11 18.10.5",),
             vector_ids=("F-01", "H-01", "F-02"),
             remediation=("Reboot to UEFI (Settings → System → Recovery → Advanced startup → UEFI Firmware Settings) and enable Secure Boot. "
-                         + ("This system appears to be in legacy BIOS mode — converting to UEFI requires repartitioning to GPT and is non-trivial." if is_legacy else "")),
+                         + ("This system appears to be in legacy BIOS mode: converting to UEFI requires repartitioning to GPT and is non-trivial." if is_legacy else "")),
             interim_mitigation="Until enabled: do not leave the device unattended in untrusted locations. Use a strong UEFI/BIOS password.",
             title_de="Secure Boot ist DEAKTIVIERT" + (" (System nutzt legacy BIOS, nicht UEFI)" if is_legacy else ""),
             description_de="Ohne Secure Boot kann das Gerät von kompromittierten Medien gebootet werden (Evil Maid, bösartiger USB), die Code laden, der vor Windows läuft.",
             remediation_de=("In UEFI neu starten (Einstellungen → System → Wiederherstellung → Erweiterter Start → UEFI-Firmware-Einstellungen) und Secure Boot aktivieren. "
-                            + ("Dieses System scheint im legacy-BIOS-Modus zu sein — die Umstellung auf UEFI erfordert Repartitionierung auf GPT und ist nicht trivial." if is_legacy else "")),
+                            + ("Dieses System scheint im legacy-BIOS-Modus zu sein: die Umstellung auf UEFI erfordert Repartitionierung auf GPT und ist nicht trivial." if is_legacy else "")),
             interim_mitigation_de="Bis zur Aktivierung: Gerät nicht unbeaufsichtigt an unsicheren Orten lassen. Starkes UEFI/BIOS-Passwort verwenden.",
             category_de=CATEGORY_DE,
             title_es="Secure Boot está DESACTIVADO" + (" (el sistema usa BIOS heredada, no UEFI)" if is_legacy else ""),
             description_es="Sin Secure Boot, el equipo puede arrancar desde medios comprometidos (Evil Maid, USB malicioso) que cargan código antes que Windows.",
             remediation_es=("Reinicia en UEFI (Configuración → Sistema → Recuperación → Inicio avanzado → Configuración de firmware UEFI) y activa Secure Boot. "
-                            + ("Este sistema parece estar en modo BIOS heredada — convertirlo a UEFI requiere reparticionar a GPT y no es trivial." if is_legacy else "")),
+                            + ("Este sistema parece estar en modo BIOS heredada: convertirlo a UEFI requiere reparticionar a GPT y no es trivial." if is_legacy else "")),
             interim_mitigation_es="Hasta activarlo: no dejes el equipo sin vigilancia en lugares no confiables. Usa una contraseña fuerte de UEFI/BIOS.",
             category_es=CATEGORY_ES,
         )
@@ -765,14 +765,14 @@ def _check_bitlocker() -> Finding:
             evidence=(r.stderr or r.exception or "(empty)")[:300],
             standards=("CIS Win11 18.9.13",),
             vector_ids=("F-03", "F-05"),
-            remediation="Open Settings → Privacy & Security → Device encryption (or Control Panel → BitLocker Drive Encryption) — confirm the OS drive shows 'On'.",
+            remediation="Open Settings → Privacy & Security → Device encryption (or Control Panel → BitLocker Drive Encryption): confirm the OS drive shows 'On'.",
             title_de="BitLocker-Status nicht abrufbar (vermutlich Adminrechte nötig)",
             description_de="Prüft, dass das OS-Volume verschlüsselt ist.",
-            remediation_de="Einstellungen → Datenschutz & Sicherheit → Geräteverschlüsselung (oder Systemsteuerung → BitLocker-Laufwerkverschlüsselung) — bestätige, dass das OS-Laufwerk 'Ein' zeigt.",
+            remediation_de="Einstellungen → Datenschutz & Sicherheit → Geräteverschlüsselung (oder Systemsteuerung → BitLocker-Laufwerkverschlüsselung): bestätige, dass das OS-Laufwerk 'Ein' zeigt.",
             category_de=CATEGORY_DE,
             title_es="Estado de BitLocker no disponible (probablemente requiere elevación)",
             description_es="Verifica que el volumen del sistema operativo esté cifrado en reposo.",
-            remediation_es="Configuración → Privacidad y seguridad → Cifrado de dispositivo (o Panel de control → Cifrado de unidad BitLocker) — confirma que la unidad del sistema muestre 'Activado'.",
+            remediation_es="Configuración → Privacidad y seguridad → Cifrado de dispositivo (o Panel de control → Cifrado de unidad BitLocker): confirma que la unidad del sistema muestre 'Activado'.",
             category_es=CATEGORY_ES,
         )
 
@@ -844,16 +844,16 @@ def _check_bitlocker() -> Finding:
         evidence=json.dumps(os_vol, indent=2),
         standards=("CIS Win11 18.9.13",),
         vector_ids=("F-03", "F-05"),
-        remediation="Control Panel → BitLocker Drive Encryption → Turn on BitLocker for the OS drive. Save the recovery key to a location ONLY you control (printout in safe + password manager — NOT in plain text on the same device).",
+        remediation="Control Panel → BitLocker Drive Encryption → Turn on BitLocker for the OS drive. Save the recovery key to a location ONLY you control (printout in safe + password manager, NOT in plain text on the same device).",
         interim_mitigation="If you cannot enable BitLocker right now (e.g. no TPM, edition limitation): keep the device powered off when not in use, never leave it unlocked unattended, and back up everything important to an encrypted external drive.",
         title_de=f"BitLocker schützt das OS-Volume nicht vollständig (Protection={os_vol.get('ProtectionStatus')}, Volume={os_vol.get('VolumeStatus')})",
         description_de="Das OS-Volume ist entweder nicht verschlüsselt, teilweise verschlüsselt oder der Schutz ist ausgesetzt. Jede Person mit physischem Zugriff kann deine Dateien lesen.",
-        remediation_de="Systemsteuerung → BitLocker-Laufwerkverschlüsselung → BitLocker für das OS-Laufwerk aktivieren. Wiederherstellungsschlüssel an einem Ort speichern, den NUR du kontrollierst (Ausdruck im Tresor + Passwort-Manager — NICHT im Klartext auf demselben Gerät).",
+        remediation_de="Systemsteuerung → BitLocker-Laufwerkverschlüsselung → BitLocker für das OS-Laufwerk aktivieren. Wiederherstellungsschlüssel an einem Ort speichern, den NUR du kontrollierst (Ausdruck im Tresor + Passwort-Manager, NICHT im Klartext auf demselben Gerät).",
         interim_mitigation_de="Wenn BitLocker jetzt nicht aktivierbar ist (kein TPM, Editions-Einschränkung): Gerät bei Nichtnutzung ausgeschaltet halten, nie entsperrt unbeaufsichtigt lassen, alles Wichtige auf einer verschlüsselten externen Festplatte sichern.",
         category_de=CATEGORY_DE,
         title_es=f"BitLocker no protege completamente el volumen del sistema (Protection={os_vol.get('ProtectionStatus')}, Volume={os_vol.get('VolumeStatus')})",
         description_es="El volumen del sistema no está cifrado, está cifrado parcialmente o tiene la protección suspendida. Cualquier persona con acceso físico puede leer tus archivos.",
-        remediation_es="Panel de control → Cifrado de unidad BitLocker → Activa BitLocker para la unidad del sistema. Guarda la clave de recuperación en un lugar que SOLO tú controlas (impresión en una caja fuerte + gestor de contraseñas — NUNCA en texto plano en el mismo equipo).",
+        remediation_es="Panel de control → Cifrado de unidad BitLocker → Activa BitLocker para la unidad del sistema. Guarda la clave de recuperación en un lugar que SOLO tú controlas (impresión en una caja fuerte + gestor de contraseñas, NUNCA en texto plano en el mismo equipo).",
         interim_mitigation_es="Si no puedes activar BitLocker ahora mismo (sin TPM, limitación de edición): mantén el equipo apagado cuando no lo uses, nunca lo dejes desbloqueado sin vigilancia, y respalda todo lo importante en un disco externo cifrado.",
         category_es=CATEGORY_ES,
     )
@@ -944,7 +944,7 @@ def _check_tpm() -> Finding:
     return Finding(
         id="WIN-CAT01-009",
         title="TPM present but not in a fully ready state",
-        description=f"TpmPresent={present} TpmReady={ready} TpmEnabled={enabled} — the TPM exists but is not fully operational.",
+        description=f"TpmPresent={present} TpmReady={ready} TpmEnabled={enabled}: the TPM exists but is not fully operational.",
         category=CATEGORY,
         severity=Severity.HIGH,
         status=Status.WARN,
@@ -954,11 +954,11 @@ def _check_tpm() -> Finding:
         vector_ids=("F-03", "H-01"),
         remediation="Run `tpm.msc` and click 'Prepare the TPM'. If it fails, check UEFI for TPM enablement.",
         title_de="TPM vorhanden, aber nicht voll einsatzbereit",
-        description_de=f"TpmPresent={present} TpmReady={ready} TpmEnabled={enabled} — der TPM existiert, ist aber nicht voll funktionsfähig.",
+        description_de=f"TpmPresent={present} TpmReady={ready} TpmEnabled={enabled}: der TPM existiert, ist aber nicht voll funktionsfähig.",
         remediation_de="`tpm.msc` ausführen und 'TPM vorbereiten' klicken. Wenn es fehlschlägt: UEFI auf TPM-Aktivierung prüfen.",
         category_de=CATEGORY_DE,
         title_es="TPM presente, pero no completamente listo",
-        description_es=f"TpmPresent={present} TpmReady={ready} TpmEnabled={enabled} — el TPM existe, pero no está completamente operativo.",
+        description_es=f"TpmPresent={present} TpmReady={ready} TpmEnabled={enabled}: el TPM existe, pero no está completamente operativo.",
         remediation_es="Ejecuta `tpm.msc` y haz clic en 'Preparar el TPM'. Si falla, revisa en la UEFI que el TPM esté habilitado.",
         category_es=CATEGORY_ES,
     )
@@ -985,7 +985,7 @@ def _check_credential_guard() -> Finding:
             severity=Severity.MEDIUM,
             status=Status.SKIP,
             command=r.cmd,
-            evidence=(r.stderr or r.stdout or "(no DeviceGuard CIM class — likely Home edition)")[:300],
+            evidence=(r.stderr or r.stdout or "(no DeviceGuard CIM class, likely Home edition)")[:300],
             standards=("CIS Win11 18.9.5",),
             vector_ids=("A-01", "A-04"),
             remediation="VBS and Credential Guard are Pro/Enterprise features. On Home edition, this check does not apply.",
@@ -1118,7 +1118,7 @@ def _check_third_party_browsers() -> Finding:
 
     return Finding(
         id="WIN-CAT01-011",
-        title=f"{len(found)} third-party browser install(s) — verify each is current",
+        title=f"{len(found)} third-party browser install(s): verify each is current",
         description="Browsers are the most common entry point for drive-by exploits. Each must be updated independently of Windows.",
         category=CATEGORY,
         severity=Severity.MEDIUM,
@@ -1129,12 +1129,12 @@ def _check_third_party_browsers() -> Finding:
         vector_ids=("W-02", "W-04", "W-06"),
         remediation="Open each browser → About → confirm latest stable. Enable auto-update in each (Chrome/Edge/Brave do this by default; Firefox needs Settings → Updates).",
         interim_mitigation="If a browser cannot be updated immediately, switch to Edge (which updates with Windows) for sensitive browsing until you can.",
-        title_de=f"{len(found)} Drittanbieter-Browser-Installation(en) — bitte aktuelle Version prüfen",
+        title_de=f"{len(found)} Drittanbieter-Browser-Installation(en): bitte aktuelle Version prüfen",
         description_de="Browser sind der häufigste Einstiegspunkt für Drive-by-Exploits. Jeder muss unabhängig von Windows aktualisiert werden.",
         remediation_de="Jeden Browser öffnen → Über/About → die aktuellste Stable-Version bestätigen. Auto-Updates in jedem aktivieren (Chrome/Edge/Brave standardmäßig; Firefox braucht Einstellungen → Updates).",
         interim_mitigation_de="Wenn ein Browser nicht sofort aktualisierbar ist: für sensibles Browsing vorübergehend Edge nutzen (wird mit Windows aktualisiert).",
         category_de=CATEGORY_DE,
-        title_es=f"{len(found)} instalación(es) de navegadores de terceros — verifica que cada uno esté actualizado",
+        title_es=f"{len(found)} instalación(es) de navegadores de terceros: verifica que cada uno esté actualizado",
         description_es="Los navegadores son el punto de entrada más común para los exploits drive-by. Cada uno debe actualizarse de forma independiente a Windows.",
         remediation_es="Abre cada navegador → Acerca de → confirma la última versión estable. Activa la actualización automática en cada uno (Chrome/Edge/Brave lo hacen por defecto; Firefox requiere Configuración → Actualizaciones).",
         interim_mitigation_es="Si un navegador no se puede actualizar de inmediato, cambia a Edge (que se actualiza con Windows) para la navegación sensible mientras tanto.",
@@ -1149,7 +1149,7 @@ def _check_winget_outdated() -> Finding:
     if not r.ok:
         return Finding(
             id="WIN-CAT01-012",
-            title="winget not available — third-party app updates not auditable",
+            title="winget not available: third-party app updates not auditable",
             description="winget is the modern Windows package manager. Without it we cannot list outdated third-party apps automatically.",
             category=CATEGORY,
             severity=Severity.INFO,
@@ -1159,11 +1159,11 @@ def _check_winget_outdated() -> Finding:
             standards=("NIST CSF",),
             vector_ids=("C-03",),
             remediation="winget ships with Windows 11 and recent Win10. If missing, install 'App Installer' from Microsoft Store.",
-            title_de="winget nicht verfügbar — Updates für Drittanbieter-Apps nicht prüfbar",
+            title_de="winget nicht verfügbar: Updates für Drittanbieter-Apps nicht prüfbar",
             description_de="winget ist der moderne Windows-Paketmanager. Ohne ihn können wir veraltete Drittanbieter-Apps nicht automatisch auflisten.",
             remediation_de="winget ist bei Windows 11 und neueren Win10 dabei. Falls fehlend: 'App-Installer' aus dem Microsoft Store installieren.",
             category_de=CATEGORY_DE,
-            title_es="winget no disponible — no se pueden auditar las actualizaciones de apps de terceros",
+            title_es="winget no disponible: no se pueden auditar las actualizaciones de apps de terceros",
             description_es="winget es el gestor de paquetes moderno de Windows. Sin él no podemos listar automáticamente las apps de terceros desactualizadas.",
             remediation_es="winget viene con Windows 11 y con Win10 recientes. Si falta, instala 'Instalador de aplicaciones' desde Microsoft Store.",
             category_es=CATEGORY_ES,

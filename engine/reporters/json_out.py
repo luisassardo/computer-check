@@ -1,4 +1,4 @@
-"""JSON reporter — machine-readable findings.json for the dashboard and tooling."""
+"""JSON reporter: machine-readable findings.json for the dashboard and tooling."""
 from __future__ import annotations
 
 import json

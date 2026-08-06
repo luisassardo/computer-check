@@ -35,7 +35,7 @@ fi
 
 # Exclude optional C-extension deps we never use: Pillow (fpdf2 image embedding)
 # and cryptography/cffi (fpdf2 PDF *encryption*). Our reports are text-only and
-# unencrypted, so these aren't needed — and dropping them removes the only
+# unencrypted, so these aren't needed, and dropping them removes the only
 # arch-specific binaries, which is what lets the universal2 build succeed.
 python3 -m PyInstaller \
   --onefile \

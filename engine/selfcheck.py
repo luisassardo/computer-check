@@ -108,12 +108,12 @@ def build_payload(ctx: ScanContext, findings: list, summary: dict) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    # MUST run before any JSON is written to stdout — see _force_utf8_stdio docstring.
+    # MUST run before any JSON is written to stdout (see _force_utf8_stdio docstring).
     _force_utf8_stdio()
 
     parser = argparse.ArgumentParser(
         prog="computer-check",
-        description="ComputerCheck v%s — read-only self-assessment for your own Mac." % __version__,
+        description="ComputerCheck v%s · read-only self-assessment for your own Mac." % __version__,
     )
     parser.add_argument("--org-code", default="", help="Organization enrollment code (optional).")
     parser.add_argument("--device-pseudonym", default="",

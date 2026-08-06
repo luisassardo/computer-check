@@ -1,4 +1,4 @@
-/* ComputerCheck landing — language toggle. Static, no network, no trackers. */
+/* ComputerCheck landing · language toggle. Static, no network, no trackers. */
 (function () {
   'use strict';
 

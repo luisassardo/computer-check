@@ -2,7 +2,7 @@
 # Build the engine, then build, sign, and notarize the universal macOS app.
 # Mirrors the ApiPass release flow (same Developer ID + notarytool pattern).
 #
-# Auth: EITHER a Keychain profile (recommended — the password never touches your
+# Auth: EITHER a Keychain profile (recommended: the password never touches your
 # shell or env after the one-time store), OR inline Apple ID + app password.
 #
 # Recommended (one-time, you type the password into Apple's tool):
@@ -33,7 +33,7 @@ VERSION="$(node -p "require('./package.json').version")"
 TAG="v${VERSION}"
 DMG="src-tauri/target/universal-apple-darwin/release/bundle/dmg/ComputerCheck_${VERSION}_universal.dmg"
 
-echo "==> ComputerCheck v${VERSION} — universal release"
+echo "==> ComputerCheck v${VERSION} · universal release"
 rustup target add x86_64-apple-darwin aarch64-apple-darwin >/dev/null 2>&1 || true
 
 # 1. Build the self-contained engine binary, signed for notarization (the engine
@@ -57,7 +57,7 @@ for a in 1 2 3 4 5; do
   if grep -q "status: Accepted" /tmp/cc-notary.log; then ok=1; break; fi
   echo "   notary retry ${a}…"; sleep 4
 done
-[ "$ok" = 1 ] || { echo "Notarization failed — see /tmp/cc-notary.log"; exit 1; }
+[ "$ok" = 1 ] || { echo "Notarization failed: see /tmp/cc-notary.log"; exit 1; }
 xcrun stapler staple "$DMG"
 xcrun stapler validate "$DMG"
 spctl -a -t open --context context:primary-signature -vv "$DMG"

@@ -55,7 +55,7 @@ class Finding:
     remediation: str = ""                # What to do, primary action (English)
     interim_mitigation: str = ""         # If primary not viable, budget/EOL device (English)
     references: tuple[str, ...] = ()     # URLs (vendor advisories, blog posts, etc.)
-    cve_ids: tuple[str, ...] = ()        # CVE identifiers — rendered as links to NVD
+    cve_ids: tuple[str, ...] = ()        # CVE identifiers, rendered as links to NVD
 
     # German translations (Du form). When empty, reporters fall back to English.
     title_de: str = ""
@@ -210,7 +210,7 @@ def _detect_os_version() -> str:
 
 
 # ---------------------------------------------------------------------------
-# Command execution helpers — every check uses these, never subprocess directly.
+# Command execution helpers: every check uses these, never subprocess directly.
 # ---------------------------------------------------------------------------
 
 # Hard cap on stored evidence per finding (keep reports small, no leak of huge user data).
@@ -248,7 +248,7 @@ def run_cmd(args: list[str] | str, timeout: int = 15, shell: bool = False) -> Cm
     is cp1252, which crashes in _readerthread when a subprocess emits any byte
     outside latin-1 (German umlauts in localized PowerShell errors, arrows in
     progress output, etc.). 'replace' substitutes invalid bytes rather than
-    raising — slightly lossy but never blocks the scan.
+    raising (slightly lossy but never blocks the scan).
     """
     cmd_str = args if isinstance(args, str) else " ".join(args)
     try:
@@ -274,7 +274,7 @@ def safe_check(check_id: str, category: str, fn, *args, **kwargs) -> "Finding":
     """Run a single check function with full crash isolation.
 
     A check that raises any exception produces a CRASH Finding for THAT check
-    only — instead of taking down the whole category module. Includes a
+    only, instead of taking down the whole category module. Includes a
     truncated traceback in the evidence so the bug can be diagnosed without
     a debugger session.
 

@@ -1,4 +1,4 @@
-"""PDF reporter — printable, EN/DE.
+"""PDF reporter: printable, EN/DE.
 
 Uses fpdf2. The PDF intentionally has a different shape than the HTML report:
 - HTML is interactive, dark, exploration-oriented.
@@ -342,7 +342,7 @@ def _safe(s: str) -> str:
         "↑": "^",
         "↓": "v",
         "·": "-",
-        "—": "-",
+        "\u2014": "-",
         "–": "-",
         "•": "*",
         "…": "...",

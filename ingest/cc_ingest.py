@@ -14,7 +14,7 @@ Inputs in --in may be `.age` (encrypted exports) and/or `.json` (already-decrypt
 payloads, e.g. for testing). Decryption uses the `age` CLI if present, else the
 `pyrage` Python module (`pip install pyrage`).
 
-Privacy: the dashboard shows org codes and device pseudonyms only — never real
+Privacy: the dashboard shows org codes and device pseudonyms only, never real
 names. It deliberately does NOT render the `evidence` field (which can contain
 usernames/paths); it shows finding titles, status and severity for aggregate
 analysis.
@@ -73,7 +73,7 @@ def decrypt_age(path: Path, identity: Path | None) -> bytes:
 
 def load_payloads(in_dir: Path, identity: Path | None, keep_json: Path | None) -> list[dict]:
     """Walk the inbox recursively (so you can dump files anywhere under it) and
-    dedupe by (device_pseudonym, scan_id) — so a scan submitted twice, or an OS
+    dedupe by (device_pseudonym, scan_id), so a scan submitted twice, or an OS
     `…(1).age` duplicate, is counted once. Genuine rescans of a device keep their
     own scan_id and remain as the time series. Filenames are otherwise ignored;
     aggregation keys on the payload contents.
@@ -166,7 +166,7 @@ def db_open(path: Path) -> sqlite3.Connection:
 
 def db_store(conn: sqlite3.Connection, payloads: list[dict]) -> int:
     """Insert new scans, idempotent by pseudonym:scan_id (re-submissions and
-    duplicates are skipped). Stores finding metadata only — never `evidence`.
+    duplicates are skipped). Stores finding metadata only, never `evidence`.
     Returns the number of newly added scans."""
     now = time.strftime("%Y-%m-%dT%H:%M:%S")
     added = 0
@@ -331,7 +331,7 @@ def aggregate(payloads: list[dict]) -> dict:
     insights: list[str] = []
     if fleet_fail:
         e = fleet_fail[0]
-        insights.append(f"{round(e['count'] / nd * 100)}% of all devices fail “{e['title']}” — the most common issue fleet-wide.")
+        insights.append(f"{round(e['count'] / nd * 100)}% of all devices fail “{e['title']}”, the most common issue fleet-wide.")
     if cat_weak:
         c, cnt = cat_weak[0]
         insights.append(f"{round(cnt / nd * 100)}% of devices have at least one issue in {c}.")
@@ -668,7 +668,7 @@ def main(argv: list[str] | None = None) -> int:
     if not payloads:
         # Always render something so the launcher opens a real page, even before
         # any reports have arrived.
-        print("[ingest] no reports yet — drop .age files in the inbox and re-run.")
+        print("[ingest] no reports yet: drop .age files in the inbox and re-run.")
 
     stats = aggregate(payloads)
     out = Path(args.out).expanduser()

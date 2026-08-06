@@ -1,4 +1,4 @@
-"""HTML reporter — self-contained, offline, interactive single-file report.
+"""HTML reporter: self-contained, offline, interactive single-file report.
 
 No external CDN, no JS framework, no build step. Pure CSS + vanilla JS.
 The report opens in any modern browser directly from the USB.
@@ -178,7 +178,7 @@ footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border
 
 <section class="summary">
   <div class="score-box">
-    <div class="score-num" id="score">—</div>
+    <div class="score-num" id="score">·</div>
     <div class="score-label">Posture Score</div>
     <div class="score-bar"><div id="score-bar-inner"></div></div>
   </div>
@@ -199,7 +199,7 @@ footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border
 <div class="findings-list" id="findings-list"></div>
 
 <footer>
-  SecurityScan-USB — read-only audit. Findings reflect the device state at scan time. Re-scan periodically.
+  SecurityScan-USB · read-only audit. Findings reflect the device state at scan time. Re-scan periodically.
   <br>This report contains technical detail about the audited device. Treat as confidential.
 </footer>
 
@@ -211,7 +211,7 @@ const SUMMARY = __SUMMARY_JSON__;
 const CTX = __CTX_JSON__;
 
 // --- header & summary ---
-document.getElementById('header-meta').textContent = `${CTX.os_name} ${CTX.os_version} (${CTX.arch}) — ${CTX.hostname} — scan ${CTX.scan_id}`;
+document.getElementById('header-meta').textContent = `${CTX.os_name} ${CTX.os_version} (${CTX.arch}) · ${CTX.hostname} · scan ${CTX.scan_id}`;
 
 const score = SUMMARY.score;
 const scoreEl = document.getElementById('score');

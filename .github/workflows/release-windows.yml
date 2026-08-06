@@ -3,8 +3,8 @@ name: Release (Windows)
 # Builds the Windows ComputerCheck app: bundles the engine as a .exe, builds the
 # Tauri NSIS + MSI installers, optionally Authenticode-signs them, and uploads.
 #
-# Code signing uses SSL.com eSigner (cloud, headless — no .pfx, no USB token).
-# Set these repo secrets ONCE (optional — without them the build still runs and
+# Code signing uses SSL.com eSigner (cloud, headless: no .pfx, no USB token).
+# Set these repo secrets ONCE (optional: without them the build still runs and
 # produces UNSIGNED installers that hit SmartScreen):
 #   ES_USERNAME       SSL.com account username
 #   ES_PASSWORD       SSL.com account password

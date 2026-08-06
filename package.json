@@ -2,7 +2,7 @@
   "name": "computer-check",
   "version": "0.1.4",
   "private": true,
-  "description": "ComputerCheck — read-only self-assessment for your own Mac, with encrypted local history. Part of C-LAB.",
+  "description": "ComputerCheck · read-only self-assessment for your own Mac, with encrypted local history. Part of C-LAB.",
   "license": "MIT",
   "scripts": {
     "tauri": "tauri",

@@ -75,6 +75,26 @@
       '<rect x="4.5" y="3.5" width="15" height="17" rx="2.4"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/>',
     cloudOff:
       '<path d="M3 3l18 18"/><path d="M7 16.5A4 4 0 0 1 6.5 8.6M9 6.2A6 6 0 0 1 18 11a3.5 3.5 0 0 1 1.3 6.6"/>',
+    camera:
+      '<path d="M8 6.5 9.2 4.5h5.6L16 6.5h3A2.5 2.5 0 0 1 21.5 9v8a2.5 2.5 0 0 1-2.5 2.5H5A2.5 2.5 0 0 1 2.5 17V9A2.5 2.5 0 0 1 5 6.5h3Z"/><circle cx="12" cy="12.5" r="3.5"/>',
+    laptop:
+      '<rect x="4.5" y="4.5" width="15" height="10.5" rx="2"/><path d="M2.5 19.5h19M10 12h4"/><path d="M2.5 19.5 4.5 15M21.5 19.5 19.5 15"/>',
+    phone:
+      '<rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M10.5 18.5h3M11 5h2"/>',
+    wifi:
+      '<path d="M2.5 9.2a14.5 14.5 0 0 1 19 0"/><path d="M5.8 12.6a9.3 9.3 0 0 1 12.4 0"/><path d="M9.1 16a4.7 4.7 0 0 1 5.8 0"/><circle cx="12" cy="19" r="1.2" fill="currentColor" stroke="none"/>',
+    bug:
+      '<path d="M9 9.5a3 3 0 0 1 6 0"/><rect x="8" y="9.5" width="8" height="9" rx="4"/><path d="M12 9.5v9M8 13.5H4.5M19.5 13.5H16M8.5 16.5l-2.3 2M15.5 16.5l2.3 2M8.5 10.8 6.2 8.8M15.5 10.8l2.3-2"/>',
+    alert:
+      '<path d="M10.3 3.9 2.6 17.2A2 2 0 0 0 4.3 20.2h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9.5v4M12 17h.01"/>',
+    monitor:
+      '<rect x="2.8" y="4" width="18.4" height="12" rx="2.2"/><path d="M8.5 20h7M12 16v4"/>',
+    list:
+      '<path d="M8 6h12M8 12h12M8 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+    info:
+      '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+    wrench:
+      '<path d="M14.5 6.5a3.8 3.8 0 0 0 4.8 4.8l-7.6 7.6a2.5 2.5 0 0 1-3.5-3.5l7.6-7.6a3.8 3.8 0 0 0-1.3-1.3Z"/><path d="M14.5 6.5 17 4l3 3-2.5 2.5"/>',
   };
 
   function svg(name) {

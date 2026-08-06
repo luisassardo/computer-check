@@ -1,17 +1,4 @@
 /* =============================================================
-   ARGUS · node design system  (vendored, CSP-safe, offline)
-   Fonts vendored locally (latin subset), no external CDN.
-   Space Grotesk (display/UI) + IBM Plex Mono (chrome/data)
-   ============================================================= */
-@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url("fonts/ibmplexmono-400.woff2") format('woff2');}
-@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url("fonts/ibmplexmono-500.woff2") format('woff2');}
-@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:600;font-display:swap;src:url("fonts/ibmplexmono-600.woff2") format('woff2');}
-@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:400;font-display:swap;src:url("fonts/spacegrotesk.woff2") format('woff2');}
-@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:500;font-display:swap;src:url("fonts/spacegrotesk.woff2") format('woff2');}
-@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:600;font-display:swap;src:url("fonts/spacegrotesk.woff2") format('woff2');}
-@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:700;font-display:swap;src:url("fonts/spacegrotesk.woff2") format('woff2');}
-
-/* =============================================================
    ARGUS · DEFENSE NETWORK, standardized node design system
    Shared across every node page. Theme via data-node + --accent.
    Type: Space Grotesk (display) + IBM Plex Mono (chrome/data)
@@ -420,17 +407,8 @@ footer .info a:hover { color: var(--accent); }
   .eyebrow .ln { width: 36px !important; }
 }
 
-/* ============================ THEME · C-LAB (cyan / mint) ============================ */
-:root{
-  --accent:   oklch(0.83 0.13 178);
-  --accent-2: oklch(0.91 0.08 178);
-  --accent-h: 178;
-  --accent-glow: oklch(0.83 0.13 178 / 0.28);
-  --accent-soft: oklch(0.83 0.13 178 / 0.12);
-}
-
-/* ============================ LANG SWITCH (tool-driven i18n) ============================ */
-/* Mirrors .langtog but uses .active (wired by each tool's own i18n JS). */
+/* ==================== LANG SWITCH (tool-driven i18n, STD-011 mechanism B) ====================
+   Mirrors .langtog but uses .active, wired by each tool's own i18n JS. */
 .lang-switch { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
 .lang-switch button {
   font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.08em;
@@ -440,6 +418,6 @@ footer .info a:hover { color: var(--accent); }
 .lang-switch button.active { background: var(--accent); color: var(--bg); }
 .lang-switch button:not(.active):hover { color: var(--fg-2); }
 
-/* crumb link (e.g. "/ C-LAB / TOOL") — no underline, hover to accent */
+/* crumb link (e.g. "/ C-LAB / TOOL"): no underline, hover to accent */
 .crumb a { color: var(--mid); text-decoration: none; transition: color .15s; }
 .crumb a:hover { color: var(--accent); }

@@ -11,7 +11,25 @@
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 
-  /* i18n is handled per-tool (data-i18n + .lang-switch); ARGUS i18n omitted. */
+  /* ---------------- i18n (EN/ES, English-first) ---------------- */
+  (function i18n() {
+    const KEY = 'argus_lang';
+    const get = () => localStorage.getItem(KEY) || 'en';
+    function apply(lang) {
+      document.documentElement.setAttribute('lang', lang);
+      $$('[data-en]').forEach((el) => { const v = el.getAttribute('data-' + lang); if (v != null) el.textContent = v; });
+      $$('[data-en-html]').forEach((el) => { const v = el.getAttribute('data-' + lang + '-html'); if (v != null) el.innerHTML = v; });
+      $$('[data-en-ph]').forEach((el) => { const v = el.getAttribute('data-' + lang + '-ph'); if (v != null) el.setAttribute('placeholder', v); });
+      $$('[data-lang-toggle] [data-lang]').forEach((b) => b.classList.toggle('on', b.getAttribute('data-lang') === lang));
+      if (window.ArgusIcons) window.ArgusIcons.hydrate();
+    }
+    window.ArgusLang = { get, set: (l) => { localStorage.setItem(KEY, l); apply(l); } };
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-set-lang]');
+      if (b) window.ArgusLang.set(b.getAttribute('data-set-lang'));
+    });
+    apply(get());
+  })();
 
   /* ---------------- UTC clock ---------------- */
   (function clock() {

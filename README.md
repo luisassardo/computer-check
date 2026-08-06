@@ -37,14 +37,14 @@ Tauri app (Rust)  ──spawn──>  engine (Python, read-only macOS checks)
                               report rendered in-app + appended to encrypted history
 ```
 
-- `engine/` — vendored macOS subset of the SecurityScan engine (Finding model,
+- `engine/`: vendored macOS subset of the SecurityScan engine (Finding model,
   `checks_macos/`, reporters) plus `selfcheck.py`, the JSON-on-stdout entrypoint.
   Vendored per `../CONVENTIONS.md` (no shared library until both tools hit v1.0).
-- `src-tauri/` — Rust shell. Commands: `run_scan`, `history_load`,
+- `src-tauri/`: Rust shell. Commands: `run_scan`, `history_load`,
   `history_append`, `history_wipe`, `get_pseudonym`, `open_url`.
-- `frontend/` — ARGUS design system (cyan accent), three views: Scan, Report,
+- `frontend/`: ARGUS design system (cyan accent), three views: Scan, Report,
   History. CSP-locked, no inline, fonts vendored.
-- `scripts/` — `build-engine.sh` (PyInstaller), `release-macos.sh` (sign +
+- `scripts/`: `build-engine.sh` (PyInstaller), `release-macos.sh` (sign +
   notarize, mirrors ApiPass).
 
 ## Develop
@@ -86,7 +86,7 @@ Sending is always user-initiated. The recipient key lives in
 
 > **The committed value is the C-LAB PRODUCTION key** (baked 2026-06-05, commit
 > `1a31ea0`, which dropped the old dev key). **Do not "replace it before real
-> use"** — earlier revisions of this README said that, and it is wrong: swapping
+> use"**: earlier revisions of this README said that, and it is wrong: swapping
 > it would orphan every export already in the field. The matching private key is
 > held offline by Luis and is never in this repo.
 >
@@ -94,7 +94,7 @@ Sending is always user-initiated. The recipient key lives in
 > `mobile-check/src-tauri/src/lib.rs`, so a rotation means editing **both** repos
 > and re-releasing **both** signed binaries. Any copy you miss silently produces
 > files nobody can decrypt. (`field-lab`/SENTINEL deliberately does *not* add a
-> third copy — it reads its own recipient from its build manifest.)
+> third copy: it reads its own recipient from its build manifest.)
 
 ## Privacy posture
 

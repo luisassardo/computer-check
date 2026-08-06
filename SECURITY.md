@@ -1,7 +1,7 @@
 # Security Policy
 
-ComputerCheck is built for high-risk users — journalists, sources, and human-rights
-defenders — who use it to audit their own devices. We take vulnerabilities seriously
+ComputerCheck is built for high-risk users (journalists, sources, and human-rights
+defenders) who use it to audit their own devices. We take vulnerabilities seriously
 and welcome responsible disclosure.
 
 ## Reporting a vulnerability
@@ -12,7 +12,7 @@ Email **security@c-lab.tools** with:
 - steps to reproduce (a proof-of-concept if possible),
 - the affected version / commit and platform.
 
-Please report **privately** — do not open a public issue, pull request, or social
+Please report **privately**: do not open a public issue, pull request, or social
 post for security problems. If you need to encrypt your report, ask for our PGP key
 at the same address.
 

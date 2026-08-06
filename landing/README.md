@@ -20,4 +20,4 @@ These resolve once a `v*` release is published:
 - macOS asset comes from `scripts/release-macos.sh` (build + notarize + publish).
 - Windows asset comes from the `Release (Windows)` Actions workflow on a `v*` tag.
 
-Until a release exists, the buttons 404 — publish a release first.
+Until a release exists, the buttons 404: publish a release first.

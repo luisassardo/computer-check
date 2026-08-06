@@ -75,7 +75,7 @@ Windows runner by `.github/workflows/release-windows.yml`:
 2. `npm run tauri build --config src-tauri/tauri.release.conf.json` → NSIS + MSI.
 3. Authenticode-signs the installers IF these repo secrets exist (else unsigned,
    SmartScreen "Run anyway"):
-   - `WINDOWS_CERTIFICATE` — base64 of your code-signing `.pfx`
+   - `WINDOWS_CERTIFICATE`: base64 of your code-signing `.pfx`
    - `WINDOWS_CERTIFICATE_PASSWORD`
 4. Uploads installers + `SHA256SUMS-windows.txt` as a workflow artifact.
 

@@ -4,7 +4,7 @@ This is a runbook for a Windows machine (e.g. via Claude Code on Windows). Goal:
 get the app running so the Windows checks execute for real, then optionally build
 an (unsigned) installer.
 
-The Windows checks have NEVER run on real hardware yet — they were written and
+The Windows checks have NEVER run on real hardware yet: they were written and
 translated on a Mac, which can't run PowerShell. So `npm run tauri dev` here is
 the real validation step. Expect to find and fix a few Windows-specific issues.
 
@@ -12,7 +12,7 @@ the real validation step. Expect to find and fix a few Windows-specific issues.
 
 Pick one:
 
-- **GitHub (recommended)** — also required for the CI build workflow to run.
+- **GitHub (recommended)**: also required for the CI build workflow to run.
   On the Mac side the repo can be pushed to `github.com/luisassardo/computer-check`
   (private is fine). Then on Windows:
   ```powershell
